@@ -1,34 +1,29 @@
-import torch
-import torchvision
+import numpy as np
 from PIL import Image
-from torchvision import transforms
+from tensorflow.keras.preprocessing import image
 from sklearn.metrics.pairwise import cosine_similarity
+from tensorflow.keras.applications.resnet50 import ResNet50
+from tensorflow.keras.applications.resnet50 import preprocess_input, decode_predictions
 
-model = torchvision.models.resnet50(pretrained=True)
+model = ResNet50(weights='imagenet')
 
 
 def resnet_embedding(image_input):
 
     input_image = Image.open(image_input)
-    preprocessing = transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ])
-    input_tensor = preprocessing(input_image)
-    input_batch = input_tensor.unsqueeze(0)
-    with torch.no_grad():
-        output = model(input_batch)
-    value = torch.nn.functional.softmax(output[0], dim=0)
+    image_resize = input_image.resize((224, 224))
+    image_array = image.img_to_array(image_resize)
+    image_array = np.expand_dims(image_array, axis=0)
+    image_preprocessed = preprocess_input(image_array)
+    embedding = model.predict(image_preprocessed)
 
-    return value
+    return embedding
 
 
 def resnet_model_score(image_one, image_two):
 
-    embedding_one = resnet_embedding(image_one).reshape(1, -1)
-    embedding_two = resnet_embedding(image_two).reshape(1, -1)
-    cosine_scores = cosine_similarity(embedding_one, embedding_two)[0][0]
-    # print(cosine_scores[0][0] * 100)
+    image_one_embedding = resnet_embedding(image_one)
+    image_two_embedding = resnet_embedding(image_two)
+    cosine_scores = cosine_similarity(image_one_embedding, image_two_embedding)
+
     return cosine_scores
