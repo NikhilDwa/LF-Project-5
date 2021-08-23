@@ -6,6 +6,14 @@ from .main import pca_process_image
 
 
 def pca_features(image_array):
+    """
+        Compute PCA with 100 features.
+
+        Returns
+        ------------------------
+        [array]
+            [returns an recovered pca image array.]
+    """
 
     pca_100 = PCA(n_components=100)
     pca_reduced = pca_100.fit_transform(image_array)
@@ -15,6 +23,14 @@ def pca_features(image_array):
 
 
 def pca_model_score(image_one, image_two):
+    """
+        Takes two image, preprocess the image and compute similarity score.
+
+        Returns
+        ------------------------
+        [float]
+            [returns similarity score.]
+    """
 
     pca_image_one_array = pca_process_image(image_one)
     pca_image_two_array = pca_process_image(image_two)
